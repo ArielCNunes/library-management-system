@@ -37,7 +37,7 @@ public class LibraryService implements Borrowable, Searchable {
     // Interface methods
     @Override
     public boolean canBorrow(LibraryMember member, Book book) {
-        // Check
+        // Check 1
         if (borrowedBooks.containsKey(book)) {
             return false; // Someone else has it
         }
@@ -55,19 +55,36 @@ public class LibraryService implements Borrowable, Searchable {
         if (currentBorrowedCount >= member.getBorrowingLimit()) {
             return false;
         }
-
         return true;
-
     }
 
     @Override
     public void borrowBook(LibraryMember member, Book book) {
+        // Check if borrowing is allowed
+        if (!canBorrow(member, book)) {
+            throw new IllegalStateException("Cannot borrow book: " + book.getTitle());
+        }
 
+        // Approve borrowing
+        borrowedBooks.put(book, member);
+        System.out.println(member.getName() + " borrowed: " + book.getTitle());
     }
 
     @Override
     public void returnBook(LibraryMember member, Book book) {
+        // Check if book has actually been borrowed
+        LibraryMember borrower = borrowedBooks.get(book);
 
+        if (borrower == null) {
+            throw new IllegalStateException("Book is not currently borrowed: " + book.getTitle());
+        }
+        if (!borrower.equals(member)) {
+            throw new IllegalStateException("This book was borrowed by someone else!");
+        }
+
+        // Remove borrowing record
+        borrowedBooks.remove(book);
+        System.out.println(member.getName() + " returned: " + book.getTitle());
     }
 
     @Override
